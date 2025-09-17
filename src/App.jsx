@@ -73,14 +73,16 @@ export default function App() {
       bodyBgAttach: bodyEl.style.backgroundAttachment || ''
     };
 
-    htmlEl.style.height = '100%';
-    bodyEl.style.height = '100%';
-    bodyEl.style.margin = '0';
-    bodyEl.style.backgroundImage = `url('${bgPath}')`;
-    bodyEl.style.backgroundSize = 'cover';
-    bodyEl.style.backgroundPosition = 'center center';
-    bodyEl.style.backgroundRepeat = 'no-repeat';
-    bodyEl.style.backgroundAttachment = 'fixed';
+    htmlEl.style.height = '';
+bodyEl.style.height = '';
+bodyEl.style.minHeight = '100vh';
+bodyEl.style.margin = '0';
+bodyEl.style.backgroundImage = `url('${bgPath}')`;
+bodyEl.style.backgroundSize = 'cover';
+bodyEl.style.backgroundPosition = 'center center';
+bodyEl.style.backgroundRepeat = 'no-repeat';
+bodyEl.style.backgroundAttachment = 'fixed';
+
 
     return () => {
       htmlEl.style.height = previous.htmlHeight;
