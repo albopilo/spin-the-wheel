@@ -5,6 +5,7 @@ Patched:
 - After each spin, spin button is locked again until a new booking ID is applied.
 - Booking ID input clears after apply. Applied booking ID disappears after spin.
 - Two-level admin: Logs-only (password 1) and Prize Editor (password 2).
+- Added spin + win sounds.
 */
 
 import React, { useEffect, useState } from 'react';
@@ -22,8 +23,8 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { Wheel } from 'react-custom-roulette';
-import spinSound from './sounds/spin.wav';
-import winSound from './sounds/win.wav';
+import spinSound from './sounds/spin.mp3';   // cinematic whoosh
+import winSound from './sounds/win.mp3';     // achievement bell
 
 
 // --------- CONFIG - Vite env (VITE_ prefix)
@@ -36,8 +37,8 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const ADMIN_LOGS_PASSWORD = import.meta.env.VITE_ADMIN_LOGS_PASSWORD || 'log123';
-const ADMIN_PRIZES_PASSWORD = import.meta.env.VITE_ADMIN_PRIZES_PASSWORD || 'prize123';
+const ADMIN_LOGS_PASSWORD = import.meta.env.VITE_ADMIN_LOGS_PASSWORD || 'secret123';
+const ADMIN_PRIZES_PASSWORD = import.meta.env.VITE_ADMIN_PRIZES_PASSWORD || 'supersecret123';
 
 // Init Firebase
 const app = initializeApp(firebaseConfig);
@@ -75,9 +76,9 @@ export default function App() {
   const [logs, setLogs] = useState([]);
   const [allowSpin, setAllowSpin] = useState(false);
 
+  // Sound refs
   const spinAudio = React.useRef(new Audio(spinSound));
   const winAudio = React.useRef(new Audio(winSound));
-
 
   // Load prizes from Firestore
   useEffect(() => {
@@ -116,42 +117,42 @@ export default function App() {
     setResult(null);
   }
 
+  // Handle Spin
   async function handleSpin() {
-  if (!bookingId) {
-    alert('Please enter a Booking ID first');
-    return;
-  }
-  if (prizes.length === 0) {
-    alert('No prizes configured');
-    return;
-  }
+    if (!bookingId) {
+      alert('Please enter a Booking ID first');
+      return;
+    }
+    if (prizes.length === 0) {
+      alert('No prizes configured');
+      return;
+    }
 
-  const { prize: selected, index } = pickPrizeByProbability(prizes);
-  setSpinning(true);
-  setResult(null);
-  setResultIndex(index);
+    const { prize: selected, index } = pickPrizeByProbability(prizes);
+    setSpinning(true);
+    setResult(null);
+    setResultIndex(index);
 
-  // Play spin sound
-  spinAudio.current.currentTime = 0;
-  spinAudio.current.play();
-
-  setTimeout(async () => {
-    await recordSpin(selected);
-    setResult(selected);
-    setSpinning(false);
-    setAllowSpin(false);
-    setBookingId('');
-
-    // Stop spin sound and play win sound
-    spinAudio.current.pause();
+    // Play spin sound
     spinAudio.current.currentTime = 0;
-    winAudio.current.currentTime = 0;
-    winAudio.current.play();
+    spinAudio.current.play();
 
-    alert(`🎉 YOU WON: ${selected.label}\nPlease take a screenshot to claim your prize.`);
-  }, 4200);
-}
+    setTimeout(async () => {
+      await recordSpin(selected);
+      setResult(selected);
+      setSpinning(false);
+      setAllowSpin(false);
+      setBookingId('');
 
+      // Stop spin sound and play win sound
+      spinAudio.current.pause();
+      spinAudio.current.currentTime = 0;
+      winAudio.current.currentTime = 0;
+      winAudio.current.play();
+
+      alert(`🎉 YOU WON: ${selected.label}\nPlease take a screenshot to claim your prize.`);
+    }, 4200);
+  }
 
   async function recordSpin(selectedPrize) {
     try {
