@@ -46,20 +46,17 @@ export default function App() {
   const [logs, setLogs] = useState([]);
   const [allowSpin, setAllowSpin] = useState(false);
 
-  // Audio refs (left as-is per your request)
   const spinAudio = useRef(new Audio('/sounds/spin.wav'));
   const winAudio = useRef(new Audio('/sounds/win.wav'));
 
-  // --- Background handling: set body background + reset body margin/height
+  // --- Background handling
   useEffect(() => {
-    // Compute path that works with Vite base URL (if set), otherwise fall back to '/bg.jpg'
     const base = (import.meta && import.meta.env && import.meta.env.BASE_URL) ? import.meta.env.BASE_URL : '/';
     const bgPath = `${base.replace(/\/$/, '')}/bg.jpg`.replace('//bg.jpg', '/bg.jpg');
 
     const htmlEl = document.documentElement;
     const bodyEl = document.body;
 
-    // Save previous inline styles to restore on unmount
     const previous = {
       htmlHeight: htmlEl.style.height || '',
       bodyHeight: bodyEl.style.height || '',
@@ -71,12 +68,9 @@ export default function App() {
       bodyBgAttach: bodyEl.style.backgroundAttachment || ''
     };
 
-    // Apply robust background to body so it always covers viewport and doesn't create layout gaps
     htmlEl.style.height = '100%';
     bodyEl.style.height = '100%';
-    // Remove default browser margin that causes top gap
     bodyEl.style.margin = '0';
-    // Use fixed attachment so the image stays in place when content scrolls
     bodyEl.style.backgroundImage = `url('${bgPath}')`;
     bodyEl.style.backgroundSize = 'cover';
     bodyEl.style.backgroundPosition = 'center center';
@@ -84,7 +78,6 @@ export default function App() {
     bodyEl.style.backgroundAttachment = 'fixed';
 
     return () => {
-      // restore previous values
       htmlEl.style.height = previous.htmlHeight;
       bodyEl.style.height = previous.bodyHeight;
       bodyEl.style.margin = previous.bodyMargin;
@@ -96,7 +89,6 @@ export default function App() {
     };
   }, []);
 
-  // Weighted random selection
   function pickPrizeByProbability(prizes) {
     const total = prizes.reduce((s, p) => s + (p.probability || 0), 0);
     if (total <= 0) {
@@ -112,21 +104,17 @@ export default function App() {
     return { prize: prizes[prizes.length - 1], index: prizes.length - 1 };
   }
 
-  // Load prizes from Firestore
   useEffect(() => {
     const q = query(collection(db, 'prizes'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const items = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
       const total = items.reduce((s, x) => s + (x.probability || 0), 0);
-      if (total === 0 && items.length > 0) {
-        items.forEach((it) => (it.probability = 1));
-      }
+      if (total === 0 && items.length > 0) items.forEach((it) => (it.probability = 1));
       setPrizes(items);
     });
     return () => unsubscribe();
   }, []);
 
-  // Load spin logs
   useEffect(() => {
     const q = query(collection(db, 'spins'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -154,12 +142,11 @@ export default function App() {
     setResult(null);
     setResultIndex(index);
 
-    // playback unchanged (you asked to not modify audio for now)
     spinAudio.current.loop = true;
     spinAudio.current.currentTime = 0;
     spinAudio.current.play();
 
-    const spinDuration = 7000; // keep longer spin duration
+    const spinDuration = 7000;
 
     setTimeout(async () => {
       await recordSpin(selected);
@@ -168,12 +155,10 @@ export default function App() {
       setAllowSpin(false);
       setBookingId('');
 
-      // Stop + reset spin audio (left as original behavior)
       spinAudio.current.pause();
       spinAudio.current.loop = false;
       spinAudio.current.currentTime = 0;
 
-      // play win
       winAudio.current.currentTime = 0;
       winAudio.current.play();
 
@@ -210,11 +195,8 @@ export default function App() {
     const probStr = prompt('Probability percent?');
     const prob = parseFloat(probStr);
     if (isNaN(prob) || prob <= 0) return alert('invalid probability');
-    try {
-      await addDoc(collection(db, 'prizes'), { label, probability: prob });
-    } catch (err) {
-      console.error(err);
-    }
+    try { await addDoc(collection(db, 'prizes'), { label, probability: prob }); }
+    catch (err) { console.error(err); }
   }
 
   async function adminEditPrize(prize) {
@@ -223,40 +205,33 @@ export default function App() {
     const probStr = prompt('Probability percent?', String(prize.probability || 0));
     const prob = parseFloat(probStr);
     if (isNaN(prob) || prob < 0) return alert('invalid probability');
-    try {
-      const ref = doc(db, 'prizes', prize.id);
-      await updateDoc(ref, { label, probability: prob });
-    } catch (err) {
-      console.error(err);
-    }
+    try { await updateDoc(doc(db, 'prizes', prize.id), { label, probability: prob }); }
+    catch (err) { console.error(err); }
   }
 
   async function adminDeletePrize(prize) {
     if (!window.confirm('Delete this prize?')) return;
-    try {
-      await deleteDoc(doc(db, 'prizes', prize.id));
-    } catch (err) {
-      console.error(err);
-    }
+    try { await deleteDoc(doc(db, 'prizes', prize.id)); }
+    catch (err) { console.error(err); }
   }
 
-  // --- UI
   return (
-    <div className="relative min-h-screen w-full font-sans">
-      {/* Overlay on top of body background - adjust opacity here to taste.
-          Using a slightly stronger overlay so foreground text is always readable. */}
+    <div className="relative min-h-screen w-full font-sans flex flex-col justify-center">
+      {/* Gradient Overlay */}
       <div
         className="absolute inset-0 z-10"
         style={{
-          backgroundColor: 'rgba(0,0,0,0.65)', // darken the photo a bit; change to 0.55/0.7 as desired
-          backdropFilter: 'blur(3px)'
+          background: 'linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.7))',
+          backdropFilter: 'blur(2px)'
         }}
       />
 
-      {/* Foreground content (z above overlay) */}
-      <div className="relative z-20 w-full max-w-4xl mx-auto px-4 pt-2 pb-6">
+      {/* Foreground */}
+      <div className="relative z-20 w-full max-w-4xl mx-auto px-4 py-6 flex flex-col items-center">
         <header className="flex flex-col sm:flex-row items-center justify-between w-full mb-6">
-          <h1 className="text-3xl font-bold text-white mb-3 sm:mb-0">Millennium TikTok Spin</h1>
+          <h1 className="text-3xl font-bold text-white mb-3 sm:mb-0 text-center sm:text-left">
+            Millennium TikTok Spin
+          </h1>
           <div className="text-sm">
             {adminLevel === 0 ? (
               <div className="flex gap-2">
@@ -288,21 +263,21 @@ export default function App() {
                   value={bookingIdInput}
                   onChange={(e) => setBookingIdInput(e.target.value)}
                   placeholder="Enter booking id"
-                  className="flex-1 border px-2 py-2 rounded"
+                  className="flex-1 border px-2 py-2 rounded text-white bg-black/30 placeholder-white"
                 />
                 <button onClick={handleApplyBooking} className="px-4 py-2 bg-green-600 text-white rounded">
                   Apply
                 </button>
               </div>
               {bookingId && (
-                <div className="mt-2 text-sm text-white">
+                <div className="mt-2 text-sm text-white text-center">
                   Current Booking ID: <strong>{bookingId}</strong>
                 </div>
               )}
             </div>
 
             {/* Wheel */}
-            <div className="w-80 h-80 relative">
+            <div className="w-80 h-80 flex items-center justify-center">
               {prizes.length > 0 ? (
                 <Wheel
                   mustStartSpinning={spinning}
@@ -325,7 +300,7 @@ export default function App() {
             </div>
 
             {/* Spin button */}
-            <div className="mt-6">
+            <div className="mt-6 mb-4">
               <button
                 onClick={handleSpin}
                 disabled={spinning || !allowSpin}
@@ -348,7 +323,7 @@ export default function App() {
               </div>
             )}
 
-            <div className="mt-6 text-xs text-white text-center">
+            <div className="mt-6 text-xs text-white text-center pb-4">
               Each spin requires entering a booking ID. After one spin, you must apply another booking ID to spin again.
             </div>
           </main>
