@@ -263,14 +263,15 @@ bodyEl.style.backgroundAttachment = 'fixed';
       backgroundImage: "url('/bg.jpg')",
       backgroundSize: "cover",
       backgroundPosition: "center center",
+      backgroundAttachment: "fixed",
     }}
   />
 
-  {/* Overlay div */}
+  {/* Overlay */}
   <div
     className="absolute inset-0 z-10"
     style={{
-      backgroundColor: 'rgba(139, 133, 133, 0.65)',
+      backgroundColor: 'rgba(0,0,0,0.65)',
       backdropFilter: 'blur(3px)',
     }}
   />
@@ -340,7 +341,7 @@ bodyEl.style.backgroundAttachment = 'fixed';
               )}
             </div>
 
-            <div className="w-full max-w-full max-h-[80vw] min-h-[300px] h-auto relative">
+            <div className="w-full max-w-full max-h-[80vw] min-h-[300px] h-auto relative text-white">
               {prizes.length > 0 ? (
                 <Wheel
                   mustStartSpinning={spinning}
@@ -356,7 +357,7 @@ bodyEl.style.backgroundAttachment = 'fixed';
                   fontSize={14}
                 />
               ) : (
-                <div className="flex items-center justify-center h-80 text-gray-400">
+                <div className="flex items-center justify-center h-80">
                   {language==='en' ? 'No prizes configured' : 'Belum ada hadiah'}
                 </div>
               )}
