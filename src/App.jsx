@@ -6,6 +6,7 @@ Patched:
 - Booking ID input clears after apply. Applied booking ID disappears after spin.
 - Two-level admin: Logs-only (password 1) and Prize Editor (password 2).
 - Added spin + win sounds.
+- Background image fits both mobile + desktop with center positioning and overlay.
 */
 
 import React, { useEffect, useState, useRef } from 'react';
@@ -221,8 +222,13 @@ export default function App() {
 
   return (
     <div
-      className="min-h-screen bg-gray-900 bg-cover bg-center relative font-sans"
-      style={{ backgroundImage: "url('/bg.jpg')" }}
+      className="min-h-screen bg-gray-900 bg-cover relative font-sans"
+      style={{
+        backgroundImage: "url('/bg.jpg')",
+        backgroundPosition: "center center",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+      }}
     >
       {/* Overlay to dim the background */}
       <div className="absolute inset-0 bg-black bg-opacity-40"></div>
