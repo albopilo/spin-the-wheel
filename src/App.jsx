@@ -8,7 +8,7 @@ Patched:
 - Added spin + win sounds.
 */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { initializeApp } from 'firebase/app';
 import {
   getFirestore,
@@ -23,9 +23,6 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { Wheel } from 'react-custom-roulette';
-const spinAudio = React.useRef(new Audio('/sounds/spin.wav'));
-const winAudio = React.useRef(new Audio('/sounds/win.wav'));
-
 
 // --------- CONFIG - Vite env (VITE_ prefix)
 const firebaseConfig = {
@@ -44,22 +41,6 @@ const ADMIN_PRIZES_PASSWORD = import.meta.env.VITE_ADMIN_PRIZES_PASSWORD || 'sup
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --------- Helpers for weighted random selection
-function pickPrizeByProbability(prizes) {
-  const total = prizes.reduce((s, p) => s + (p.probability || 0), 0);
-  if (total <= 0) {
-    const idx = Math.floor(Math.random() * prizes.length);
-    return { prize: prizes[idx], index: idx };
-  }
-  const r = Math.random() * total;
-  let acc = 0;
-  for (let i = 0; i < prizes.length; i++) {
-    acc += prizes[i].probability || 0;
-    if (r <= acc) return { prize: prizes[i], index: i };
-  }
-  return { prize: prizes[prizes.length - 1], index: prizes.length - 1 };
-}
-
 // ---------- Main App
 export default function App() {
   const [bookingIdInput, setBookingIdInput] = useState('');
@@ -76,9 +57,25 @@ export default function App() {
   const [logs, setLogs] = useState([]);
   const [allowSpin, setAllowSpin] = useState(false);
 
-  // Sound refs
-  const spinAudio = React.useRef(new Audio(spinSound));
-  const winAudio = React.useRef(new Audio(winSound));
+  // ✅ Audio refs inside the component
+  const spinAudio = useRef(new Audio('/sounds/spin.wav'));
+  const winAudio = useRef(new Audio('/sounds/win.wav'));
+
+  // --------- Helpers for weighted random selection
+  function pickPrizeByProbability(prizes) {
+    const total = prizes.reduce((s, p) => s + (p.probability || 0), 0);
+    if (total <= 0) {
+      const idx = Math.floor(Math.random() * prizes.length);
+      return { prize: prizes[idx], index: idx };
+    }
+    const r = Math.random() * total;
+    let acc = 0;
+    for (let i = 0; i < prizes.length; i++) {
+      acc += prizes[i].probability || 0;
+      if (r <= acc) return { prize: prizes[i], index: i };
+    }
+    return { prize: prizes[prizes.length - 1], index: prizes.length - 1 };
+  }
 
   // Load prizes from Firestore
   useEffect(() => {
@@ -224,15 +221,14 @@ export default function App() {
 
   return (
     <div
-  className="min-h-screen bg-gray-900 bg-cover bg-center relative font-sans"
-  style={{ backgroundImage: "url('/bg.jpg')" }}
->
-  {/* Overlay to dim the background */}
-  <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+      className="min-h-screen bg-gray-900 bg-cover bg-center relative font-sans"
+      style={{ backgroundImage: "url('/bg.jpg')" }}
+    >
+      {/* Overlay to dim the background */}
+      <div className="absolute inset-0 bg-black bg-opacity-40"></div>
 
-  {/* Foreground content */}
-  <div className="relative z-10 max-w-3xl mx-auto bg-white/80 backdrop-blur-md shadow-md rounded-lg p-6">
-      <div className="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-6">
+      {/* Foreground content */}
+      <div className="relative z-10 max-w-3xl mx-auto bg-white/80 backdrop-blur-md shadow-md rounded-lg p-6">
         <header className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold">Millennium TikTok Spin</h1>
           <div className="text-sm">
@@ -296,7 +292,9 @@ export default function App() {
                     fontSize={14}
                   />
                 ) : (
-                  <div className="flex items-center justify-center h-full text-gray-400">No prizes configured</div>
+                  <div className="flex items-center justify-center h-full text-gray-400">
+                    No prizes configured
+                  </div>
                 )}
               </div>
 
@@ -341,7 +339,7 @@ export default function App() {
           />
         )}
       </div>
-    </div></div>
+    </div>
   );
 }
 
