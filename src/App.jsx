@@ -23,8 +23,8 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { Wheel } from 'react-custom-roulette';
-import spinSound from './sounds/spin.mp3';   // cinematic whoosh
-import winSound from './sounds/win.mp3';     // achievement bell
+import spinSound from './sounds/spin.wav';   // cinematic whoosh
+import winSound from './sounds/win.wav';     // achievement bell
 
 
 // --------- CONFIG - Vite env (VITE_ prefix)
