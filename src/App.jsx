@@ -1,8 +1,10 @@
 /*
 TikTok Spin-the-Wheel Landing Page (Vite-ready)
-Patched: Any booking ID is accepted. After each spin, spin button is locked again until a new booking ID is applied.
-Booking ID input clears after apply. Applied booking ID disappears after spin.
-Two-level admin: Logs-only (password 1) and Prize Editor (password 2).
+Patched:
+- Any booking ID is accepted.
+- After each spin, spin button is locked again until a new booking ID is applied.
+- Booking ID input clears after apply. Applied booking ID disappears after spin.
+- Two-level admin: Logs-only (password 1) and Prize Editor (password 2).
 */
 
 import React, { useEffect, useState } from 'react';
