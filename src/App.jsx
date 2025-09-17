@@ -31,7 +31,6 @@ const ADMIN_PRIZES_PASSWORD = import.meta.env.VITE_ADMIN_PRIZES_PASSWORD || 'sup
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ---------- Main App
 export default function App() {
   const [bookingIdInput, setBookingIdInput] = useState('');
   const [bookingId, setBookingId] = useState('');
@@ -49,6 +48,7 @@ export default function App() {
 
   const spinAudio = useRef(new Audio('/sounds/spin.wav'));
   const winAudio = useRef(new Audio('/sounds/win.wav'));
+  const spinInterval = useRef(null);
 
   // Weighted random selection
   function pickPrizeByProbability(prizes) {
@@ -66,6 +66,7 @@ export default function App() {
     return { prize: prizes[prizes.length - 1], index: prizes.length - 1 };
   }
 
+  // Load prizes from Firestore
   useEffect(() => {
     const q = query(collection(db, 'prizes'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -79,6 +80,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // Load spin logs
   useEffect(() => {
     const q = query(collection(db, 'spins'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -106,25 +108,40 @@ export default function App() {
     setResult(null);
     setResultIndex(index);
 
+    // Play spin sound
     spinAudio.current.loop = true;
+    spinAudio.current.playbackRate = 1.5;
     spinAudio.current.currentTime = 0;
     spinAudio.current.play();
 
-    setTimeout(async () => {
-      await recordSpin(selected);
-      setResult(selected);
-      setSpinning(false);
-      setAllowSpin(false);
-      setBookingId('');
+    let spinTime = 5000; // total spin duration
+    let start = Date.now();
+    let rate = 1.5;
 
-      spinAudio.current.pause();
-      spinAudio.current.loop = false;
-      spinAudio.current.currentTime = 0;
-      winAudio.current.currentTime = 0;
-      winAudio.current.play();
+    // Gradually slow down spin sound
+    spinInterval.current = setInterval(() => {
+      let elapsed = Date.now() - start;
+      if (elapsed >= spinTime) {
+        clearInterval(spinInterval.current);
+        spinAudio.current.pause();
+        spinAudio.current.loop = false;
+        spinAudio.current.playbackRate = 1;
+        spinAudio.current.currentTime = 0;
 
-      alert(`🎉 YOU WON: ${selected.label}\nPlease take a screenshot to claim your prize.`);
-    }, 4200);
+        winAudio.current.currentTime = 0;
+        winAudio.current.play();
+
+        setResult(selected);
+        setSpinning(false);
+        setAllowSpin(false);
+        setBookingId('');
+        alert(`🎉 YOU WON: ${selected.label}\nPlease take a screenshot to claim your prize.`);
+      } else {
+        // slow down spin sound gradually
+        rate = 1.5 - 1.2 * (elapsed / spinTime); // from 1.5 to 0.3
+        spinAudio.current.playbackRate = Math.max(rate, 0.3);
+      }
+    }, 50);
   }
 
   async function recordSpin(selectedPrize) {
@@ -188,16 +205,9 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen w-full font-sans">
-      {/* Background */}
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url('/bg.jpg')" }}
-      />
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/60" />
-
-      {/* Foreground content */}
-      <div className="relative z-10 w-full max-w-4xl mx-auto px-4 py-6">
+      <div className="absolute inset-0 bg-cover bg-center z-0" style={{ backgroundImage: "url('/bg.jpg')" }} />
+      <div className="absolute inset-0 bg-black/60 z-10" />
+      <div className="relative z-20 w-full max-w-4xl mx-auto px-4 py-6">
         <header className="flex flex-col sm:flex-row items-center justify-between w-full mb-6">
           <h1 className="text-3xl font-bold text-white mb-3 sm:mb-0">Millennium TikTok Spin</h1>
           <div className="text-sm">
@@ -229,7 +239,6 @@ export default function App() {
 
         {adminLevel === 0 && (
           <main className="flex flex-col items-center w-full max-w-2xl">
-            {/* Booking ID */}
             <div className="mb-6 w-full">
               <label className="block mb-1 text-white font-medium">Booking ID:</label>
               <div className="flex gap-2">
@@ -253,7 +262,6 @@ export default function App() {
               )}
             </div>
 
-            {/* Wheel */}
             <div className="w-80 h-80 relative">
               {prizes.length > 0 ? (
                 <Wheel
@@ -268,6 +276,9 @@ export default function App() {
                   radiusLineColor="#fff"
                   radiusLineWidth={2}
                   fontSize={14}
+                  spinDuration={7} // 7 seconds for smoothness
+                  spinAngleStart={0}
+                  innerRadius={0}
                 />
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-400">
@@ -276,7 +287,6 @@ export default function App() {
               )}
             </div>
 
-            {/* Spin button */}
             <div className="mt-6">
               <button
                 onClick={handleSpin}
@@ -289,7 +299,6 @@ export default function App() {
               </button>
             </div>
 
-            {/* Result */}
             {result && (
               <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded text-center">
                 <h3 className="font-semibold text-green-800">You won:</h3>
