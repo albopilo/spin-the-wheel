@@ -223,7 +223,15 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 font-sans">
+    <div
+  className="min-h-screen bg-gray-900 bg-cover bg-center relative font-sans"
+  style={{ backgroundImage: "url('/bg.jpg')" }}
+>
+  {/* Overlay to dim the background */}
+  <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+
+  {/* Foreground content */}
+  <div className="relative z-10 max-w-3xl mx-auto bg-white/80 backdrop-blur-md shadow-md rounded-lg p-6">
       <div className="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-6">
         <header className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold">Millennium TikTok Spin</h1>
@@ -333,7 +341,7 @@ export default function App() {
           />
         )}
       </div>
-    </div>
+    </div></div>
   );
 }
 
