@@ -40,18 +40,17 @@ export default function App() {
   const [result, setResult] = useState(null);
   const [resultIndex, setResultIndex] = useState(0);
 
-  const [adminLevel, setAdminLevel] = useState(0); // 0 = none, 1 = logs, 2 = full
+  const [adminLevel, setAdminLevel] = useState(0);
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [prizePasswordInput, setPrizePasswordInput] = useState('');
 
   const [logs, setLogs] = useState([]);
   const [allowSpin, setAllowSpin] = useState(false);
 
-  // ✅ Audio refs
   const spinAudio = useRef(new Audio('/sounds/spin.wav'));
   const winAudio = useRef(new Audio('/sounds/win.wav'));
 
-  // --------- Helpers for weighted random selection
+  // Weighted random selection
   function pickPrizeByProbability(prizes) {
     const total = prizes.reduce((s, p) => s + (p.probability || 0), 0);
     if (total <= 0) {
@@ -67,7 +66,6 @@ export default function App() {
     return { prize: prizes[prizes.length - 1], index: prizes.length - 1 };
   }
 
-  // Load prizes from Firestore
   useEffect(() => {
     const q = query(collection(db, 'prizes'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -81,7 +79,6 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Load logs
   useEffect(() => {
     const q = query(collection(db, 'spins'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -91,36 +88,24 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Apply booking ID
   function handleApplyBooking() {
     const id = bookingIdInput.trim();
-    if (!id) {
-      alert('Booking ID is required');
-      return;
-    }
+    if (!id) return alert('Booking ID is required');
     setBookingId(id);
     setBookingIdInput('');
     setAllowSpin(true);
     setResult(null);
   }
 
-  // Handle Spin
   async function handleSpin() {
-    if (!bookingId) {
-      alert('Please enter a Booking ID first');
-      return;
-    }
-    if (prizes.length === 0) {
-      alert('No prizes configured');
-      return;
-    }
+    if (!bookingId) return alert('Please enter a Booking ID first');
+    if (prizes.length === 0) return alert('No prizes configured');
 
     const { prize: selected, index } = pickPrizeByProbability(prizes);
     setSpinning(true);
     setResult(null);
     setResultIndex(index);
 
-    // 🎵 Start looping spin sound
     spinAudio.current.loop = true;
     spinAudio.current.currentTime = 0;
     spinAudio.current.play();
@@ -132,7 +117,6 @@ export default function App() {
       setAllowSpin(false);
       setBookingId('');
 
-      // 🎵 Stop spin sound and play win sound
       spinAudio.current.pause();
       spinAudio.current.loop = false;
       spinAudio.current.currentTime = 0;
@@ -146,7 +130,7 @@ export default function App() {
   async function recordSpin(selectedPrize) {
     try {
       await addDoc(collection(db, 'spins'), {
-        bookingId: bookingId,
+        bookingId,
         prizeId: selectedPrize.id,
         prizeLabel: selectedPrize.label,
         createdAt: Timestamp.now(),
@@ -156,25 +140,16 @@ export default function App() {
     }
   }
 
-  // Admin log in (level 1)
   function handleAdminLogin() {
-    if (adminPasswordInput === ADMIN_LOGS_PASSWORD) {
-      setAdminLevel(1);
-    } else {
-      alert('Wrong admin password');
-    }
+    if (adminPasswordInput === ADMIN_LOGS_PASSWORD) setAdminLevel(1);
+    else alert('Wrong admin password');
   }
 
-  // Admin prize unlock (level 2)
   function handlePrizeLogin() {
-    if (prizePasswordInput === ADMIN_PRIZES_PASSWORD) {
-      setAdminLevel(2);
-    } else {
-      alert('Wrong prize password');
-    }
+    if (prizePasswordInput === ADMIN_PRIZES_PASSWORD) setAdminLevel(2);
+    else alert('Wrong prize password');
   }
 
-  // Admin actions
   async function adminAddPrize() {
     const label = prompt('Prize label?');
     if (!label) return;
@@ -212,16 +187,18 @@ export default function App() {
   }
 
   return (
-    <div
-      className="relative min-h-screen w-full flex flex-col items-center justify-center font-sans bg-cover bg-center"
-      style={{ backgroundImage: "url('/bg.jpg')" }}
-    >
+    <div className="relative min-h-screen w-full font-sans">
+      {/* Background */}
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: "url('/bg.jpg')" }}
+      />
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black/60"></div>
+      <div className="absolute inset-0 bg-black/60" />
 
       {/* Foreground content */}
-      <div className="relative z-10 flex flex-col items-center justify-center w-full px-4">
-        <header className="flex flex-col sm:flex-row items-center justify-between w-full max-w-4xl mb-6">
+      <div className="relative z-10 w-full max-w-4xl mx-auto px-4 py-6">
+        <header className="flex flex-col sm:flex-row items-center justify-between w-full mb-6">
           <h1 className="text-3xl font-bold text-white mb-3 sm:mb-0">Millennium TikTok Spin</h1>
           <div className="text-sm">
             {adminLevel === 0 ? (
