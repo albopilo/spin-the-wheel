@@ -254,14 +254,15 @@ bodyEl.style.backgroundAttachment = 'fixed';
   });
 
   return (
-    <div className="relative min-h-screen w-full font-sans">
+    <div className="relative w-full font-sans">
       <div
-        className="absolute inset-0 z-10"
-        style={{
-          backgroundColor: 'rgba(0,0,0,0.65)',
-          backdropFilter: 'blur(3px)'
-        }}
-      />
+  className="absolute top-0 left-0 right-0 bottom-0 z-10"
+  style={{
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    backdropFilter: 'blur(3px)'
+  }}
+/>
+
 
       {/* content wrapper: no mx-auto (you said no auto margin), add top padding so header isn't cut */}
       <div
