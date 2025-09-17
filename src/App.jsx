@@ -251,7 +251,7 @@ export default function App() {
   });
 
   return (
-    <div className="relative min-h-screen w-full font-sans">
+    <div className="relative min-h-full w-full font-sans">
   <div
     className="absolute inset-0 z-10"
     style={{
@@ -260,7 +260,7 @@ export default function App() {
     }}
   />
 
-  <div className="relative z-20 w-full px-4 pt-24 pb-0">
+  <div className="static z-20 w-full px-4 pt-24 pb-0">
       <header className="flex flex-col sm:flex-row w-full mb-6">
 
       <h1 className="text-3xl font-bold mb-3 sm:mb-0" style={textOutlineStyle('#ffffff')}>
