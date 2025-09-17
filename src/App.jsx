@@ -105,13 +105,15 @@ export default function App() {
     return { prize: prizes[prizes.length - 1], index: prizes.length - 1 };
   }
 
-  // Load prizes from Firestore
+  // Load prizes
   useEffect(() => {
     const q = query(collection(db, 'prizes'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const items = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
       const total = items.reduce((s, x) => s + (x.probability || 0), 0);
-      if (total === 0 && items.length > 0) items.forEach((it) => (it.probability = 1));
+      if (total === 0 && items.length > 0) {
+        items.forEach((it) => (it.probability = 1));
+      }
       setPrizes(items);
     });
     return () => unsubscribe();
