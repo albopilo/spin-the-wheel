@@ -89,6 +89,7 @@ export default function App() {
     };
   }, []);
 
+  // Weighted random selection
   function pickPrizeByProbability(prizes) {
     const total = prizes.reduce((s, p) => s + (p.probability || 0), 0);
     if (total <= 0) {
@@ -104,6 +105,7 @@ export default function App() {
     return { prize: prizes[prizes.length - 1], index: prizes.length - 1 };
   }
 
+  // Load prizes from Firestore
   useEffect(() => {
     const q = query(collection(db, 'prizes'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -115,6 +117,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // Load spin logs
   useEffect(() => {
     const q = query(collection(db, 'spins'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -195,8 +198,11 @@ export default function App() {
     const probStr = prompt('Probability percent?');
     const prob = parseFloat(probStr);
     if (isNaN(prob) || prob <= 0) return alert('invalid probability');
-    try { await addDoc(collection(db, 'prizes'), { label, probability: prob }); }
-    catch (err) { console.error(err); }
+    try {
+      await addDoc(collection(db, 'prizes'), { label, probability: prob });
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   async function adminEditPrize(prize) {
@@ -205,33 +211,36 @@ export default function App() {
     const probStr = prompt('Probability percent?', String(prize.probability || 0));
     const prob = parseFloat(probStr);
     if (isNaN(prob) || prob < 0) return alert('invalid probability');
-    try { await updateDoc(doc(db, 'prizes', prize.id), { label, probability: prob }); }
-    catch (err) { console.error(err); }
+    try {
+      const ref = doc(db, 'prizes', prize.id);
+      await updateDoc(ref, { label, probability: prob });
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   async function adminDeletePrize(prize) {
     if (!window.confirm('Delete this prize?')) return;
-    try { await deleteDoc(doc(db, 'prizes', prize.id)); }
-    catch (err) { console.error(err); }
+    try {
+      await deleteDoc(doc(db, 'prizes', prize.id));
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   return (
-    <div className="relative min-h-screen w-full font-sans flex flex-col justify-center">
-      {/* Gradient Overlay */}
+    <div className="relative min-h-screen w-full font-sans">
       <div
         className="absolute inset-0 z-10"
         style={{
-          background: 'linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.7))',
-          backdropFilter: 'blur(2px)'
+          backgroundColor: 'rgba(0,0,0,0.65)',
+          backdropFilter: 'blur(3px)'
         }}
       />
 
-      {/* Foreground */}
-      <div className="relative z-20 w-full max-w-4xl mx-auto px-4 py-6 flex flex-col items-center">
+      <div className="relative z-20 w-full max-w-4xl mx-auto px-4 pt-2 pb-6">
         <header className="flex flex-col sm:flex-row items-center justify-between w-full mb-6">
-          <h1 className="text-3xl font-bold text-white mb-3 sm:mb-0 text-center sm:text-left">
-            Millennium TikTok Spin
-          </h1>
+          <h1 className="text-3xl font-bold text-white mb-3 sm:mb-0">Millennium TikTok Spin</h1>
           <div className="text-sm">
             {adminLevel === 0 ? (
               <div className="flex gap-2">
@@ -255,7 +264,6 @@ export default function App() {
 
         {adminLevel === 0 && (
           <main className="flex flex-col items-center w-full max-w-2xl">
-            {/* Booking ID */}
             <div className="mb-6 w-full">
               <label className="block mb-1 text-white font-medium">Booking ID:</label>
               <div className="flex gap-2">
@@ -263,21 +271,20 @@ export default function App() {
                   value={bookingIdInput}
                   onChange={(e) => setBookingIdInput(e.target.value)}
                   placeholder="Enter booking id"
-                  className="flex-1 border px-2 py-2 rounded text-white bg-black/30 placeholder-white"
+                  className="flex-1 border px-2 py-2 rounded"
                 />
                 <button onClick={handleApplyBooking} className="px-4 py-2 bg-green-600 text-white rounded">
                   Apply
                 </button>
               </div>
               {bookingId && (
-                <div className="mt-2 text-sm text-white text-center">
+                <div className="mt-2 text-sm text-white">
                   Current Booking ID: <strong>{bookingId}</strong>
                 </div>
               )}
             </div>
 
-            {/* Wheel */}
-            <div className="w-80 h-80 flex items-center justify-center">
+            <div className="w-80 h-80 relative">
               {prizes.length > 0 ? (
                 <Wheel
                   mustStartSpinning={spinning}
@@ -299,8 +306,7 @@ export default function App() {
               )}
             </div>
 
-            {/* Spin button */}
-            <div className="mt-6 mb-4">
+            <div className="mt-6">
               <button
                 onClick={handleSpin}
                 disabled={spinning || !allowSpin}
@@ -312,7 +318,6 @@ export default function App() {
               </button>
             </div>
 
-            {/* Result */}
             {result && (
               <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded text-center">
                 <h3 className="font-semibold text-green-800">You won:</h3>
@@ -323,7 +328,7 @@ export default function App() {
               </div>
             )}
 
-            <div className="mt-6 text-xs text-white text-center pb-4">
+            <div className="mt-6 text-xs text-white text-center">
               Each spin requires entering a booking ID. After one spin, you must apply another booking ID to spin again.
             </div>
           </main>
