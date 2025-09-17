@@ -151,7 +151,7 @@ export default function App() {
     const { prize: selected, index } = pickPrizeByProbability(prizes);
     setSpinning(true);
     setResult(null);
-    setResultIndex(index);
+    setResultIndex(index); // patched: ensures Wheel spins to correct index
 
     spinAudio.current.loop = true;
     spinAudio.current.currentTime = 0;
