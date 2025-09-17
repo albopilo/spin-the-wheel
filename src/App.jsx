@@ -254,14 +254,26 @@ bodyEl.style.backgroundAttachment = 'fixed';
   });
 
   return (
-    <div className="relative w-full font-sans">
-      <div
-  className="absolute top-0 left-0 right-0 bottom-0 z-10"
-  style={{
-    backgroundColor: 'rgba(0,0,0,0.65)',
-    backdropFilter: 'blur(3px)'
-  }}
-/>
+    <div className="relative min-h-screen w-full font-sans">
+
+  {/* Background div */}
+  <div
+    className="absolute inset-0 z-0"
+    style={{
+      backgroundImage: "url('/bg.jpg')",
+      backgroundSize: "cover",
+      backgroundPosition: "center center",
+    }}
+  />
+
+  {/* Overlay div */}
+  <div
+    className="absolute inset-0 z-10"
+    style={{
+      backgroundColor: 'rgba(0,0,0,0.65)',
+      backdropFilter: 'blur(3px)',
+    }}
+  />
 
 
       {/* content wrapper: no mx-auto (you said no auto margin), add top padding so header isn't cut */}
@@ -422,6 +434,7 @@ function AdminPanel({
 }) {
   return (
     <div className="w-full max-w-4xl mt-6 text-white">
+      {/* All text inside now inherits white color */}
       <h2 className="text-lg font-semibold mb-3">{language==='en' ? 'Admin Dashboard' : 'Dashboard Admin'}</h2>
 
       {adminLevel === 1 && (
@@ -430,7 +443,7 @@ function AdminPanel({
             placeholder={language==='en' ? "Prize editor password" : "Password editor hadiah"}
             value={prizePasswordInput}
             onChange={(e) => setPrizePasswordInput(e.target.value)}
-            className="border px-2 py-1 rounded"
+            className="border px-2 py-1 rounded text-white bg-gray-800 placeholder-white"
           />
           <button onClick={onPrizeLogin} className="px-3 py-1 bg-indigo-600 text-white rounded">
             {language==='en' ? 'Unlock Prize Editor' : 'Buka Editor Hadiah'}
@@ -446,7 +459,7 @@ function AdminPanel({
             </button>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left border-collapse border border-gray-400">
+            <table className="w-full text-sm text-left border-collapse border border-gray-400 text-white">
               <thead>
                 <tr className="bg-gray-700 text-white">
                   <th className="border px-2 py-1">{language==='en' ? 'Label' : 'Label'}</th>
@@ -478,7 +491,7 @@ function AdminPanel({
       <div className="mt-6">
         <h3 className="text-md font-semibold mb-2">{language==='en' ? 'Recent Spins' : 'Putaran Terbaru'}</h3>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left border-collapse border border-gray-400">
+          <table className="w-full text-sm text-left border-collapse border border-gray-400 text-white">
             <thead>
               <tr className="bg-gray-700 text-white">
                 <th className="border px-2 py-1">Booking ID</th>
@@ -518,3 +531,4 @@ function AdminPanel({
     </div>
   );
 }
+
