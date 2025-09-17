@@ -130,7 +130,7 @@ export default function App() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const entries = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
       setLogs(entries);
-      setCurrentPage(1); // reset pagination when logs update
+      setCurrentPage(1);
     });
     return () => unsubscribe();
   }, []);
@@ -151,11 +151,11 @@ export default function App() {
     const { prize: selected, index } = pickPrizeByProbability(prizes);
     setSpinning(true);
     setResult(null);
-    setResultIndex(index); // patched: ensures Wheel spins to correct index
+    setResultIndex(index);
 
     spinAudio.current.loop = true;
     spinAudio.current.currentTime = 0;
-    spinAudio.current.playbackRate = 3; // 3x speed
+    spinAudio.current.playbackRate = 3;
     spinAudio.current.play();
 
     const spinDuration = 7000;
@@ -196,13 +196,13 @@ export default function App() {
   function handleAdminLogin() {
     if (adminPasswordInput === ADMIN_LOGS_PASSWORD) setAdminLevel(1);
     else alert(language==='en' ? 'Wrong admin password' : 'Password admin salah');
-    setAdminPasswordInput(''); // auto-clear
+    setAdminPasswordInput('');
   }
 
   function handlePrizeLogin() {
     if (prizePasswordInput === ADMIN_PRIZES_PASSWORD) setAdminLevel(2);
     else alert(language==='en' ? 'Wrong prize password' : 'Password hadiah salah');
-    setPrizePasswordInput(''); // auto-clear
+    setPrizePasswordInput('');
   }
 
   async function adminAddPrize() {
@@ -244,7 +244,6 @@ export default function App() {
   const totalPages = Math.ceil(logs.length / pageSize);
   const paginatedLogs = logs.slice((currentPage-1)*pageSize, currentPage*pageSize);
 
-  // Helper for outline style
   const textOutlineStyle = (color) => ({
     color: 'white',
     WebkitTextStroke: `1px ${color}`,
@@ -267,9 +266,15 @@ export default function App() {
             {language==='en' ? 'Millennium TikTok Spin' : 'Putar TikTok Millennium'}
           </h1>
           <div className="flex items-center gap-2">
-            <button onClick={()=>setLanguage(language==='en'?'id':'en')} className="px-2 py-1 bg-gray-700 text-white rounded">
-              {language==='en' ? 'Bahasa Indonesia' : 'English'}
-            </button>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="px-2 py-1 rounded border bg-gray-700 text-white"
+            >
+              <option value="en">English</option>
+              <option value="id">Bahasa Indonesia</option>
+            </select>
+
             {adminLevel === 0 ? (
               <div className="flex gap-2">
                 <input
@@ -314,7 +319,7 @@ export default function App() {
               )}
             </div>
 
-            <div className="w-80 h-80 relative">
+            <div className="w-full max-w-full max-h-[80vw] h-auto relative">
               {prizes.length > 0 ? (
                 <Wheel
                   mustStartSpinning={spinning}
@@ -330,7 +335,7 @@ export default function App() {
                   fontSize={14}
                 />
               ) : (
-                <div className="flex items-center justify-center h-full text-gray-400">
+                <div className="flex items-center justify-center h-80 text-gray-400">
                   {language==='en' ? 'No prizes configured' : 'Belum ada hadiah'}
                 </div>
               )}
@@ -390,7 +395,7 @@ export default function App() {
   );
 }
 
-// AdminPanel component stays the same, no changes needed
+// AdminPanel component remains unchanged
 function AdminPanel({
   prizes,
   logs,
@@ -431,64 +436,76 @@ function AdminPanel({
               {language==='en' ? 'Add Prize' : 'Tambah Hadiah'}
             </button>
           </div>
-
-          <section className="mb-6">
-            <h3 className="font-medium">{language==='en' ? 'Prizes' : 'Hadiah'}</h3>
-            <div className="grid grid-cols-2 gap-3 mt-2">
-              {prizes.map((p) => (
-                <div key={p.id} className="p-3 border rounded bg-gray-50 text-black">
-                  <div className="font-semibold">{p.label}</div>
-                  <div className="text-xs text-gray-600">Probability: {p.probability || 0}</div>
-                  <div className="mt-2 flex gap-2">
-                    <button onClick={() => onEditPrize(p)} className="text-sm px-2 py-1 bg-yellow-400 rounded">
-                      {language==='en' ? 'Edit' : 'Ubah'}
-                    </button>
-                    <button onClick={() => onDeletePrize(p)} className="text-sm px-2 py-1 bg-red-500 text-white rounded">
-                      {language==='en' ? 'Delete' : 'Hapus'}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left border-collapse border border-gray-400">
+              <thead>
+                <tr className="bg-gray-700 text-white">
+                  <th className="border px-2 py-1">{language==='en' ? 'Label' : 'Label'}</th>
+                  <th className="border px-2 py-1">{language==='en' ? 'Probability' : 'Probabilitas'}</th>
+                  <th className="border px-2 py-1">{language==='en' ? 'Actions' : 'Aksi'}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {prizes.map((p) => (
+                  <tr key={p.id} className="bg-gray-800">
+                    <td className="border px-2 py-1">{p.label}</td>
+                    <td className="border px-2 py-1">{p.probability}</td>
+                    <td className="border px-2 py-1 flex gap-2">
+                      <button onClick={() => onEditPrize(p)} className="px-2 py-1 bg-yellow-500 rounded text-white">
+                        {language==='en' ? 'Edit' : 'Edit'}
+                      </button>
+                      <button onClick={() => onDeletePrize(p)} className="px-2 py-1 bg-red-500 rounded text-white">
+                        {language==='en' ? 'Delete' : 'Hapus'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </>
       )}
 
-      <section>
-        <h3 className="font-medium">{language==='en' ? 'Spin Logs (latest)' : 'Log Putaran (terbaru)'}</h3>
-        <div className="mt-2 max-h-64 overflow-auto border rounded p-2 bg-black bg-opacity-70 text-white">
-          <table className="w-full text-sm">
+      <div className="mt-6">
+        <h3 className="text-md font-semibold mb-2">{language==='en' ? 'Recent Spins' : 'Putaran Terbaru'}</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left border-collapse border border-gray-400">
             <thead>
-              <tr className="text-left text-xs text-gray-300">
-                <th>Time</th>
-                <th>Booking ID</th>
-                <th>Prize</th>
+              <tr className="bg-gray-700 text-white">
+                <th className="border px-2 py-1">Booking ID</th>
+                <th className="border px-2 py-1">{language==='en' ? 'Prize' : 'Hadiah'}</th>
+                <th className="border px-2 py-1">{language==='en' ? 'Date' : 'Tanggal'}</th>
               </tr>
             </thead>
             <tbody>
-              {logs.map((l) => (
-                <tr key={l.id} className="border-t border-gray-500">
-                  <td className="py-1">{l.createdAt?.toDate ? l.createdAt.toDate().toLocaleString() : '-'}</td>
-                  <td className="py-1">{l.bookingId}</td>
-                  <td className="py-1">{l.prizeLabel}</td>
+              {logs.map((log) => (
+                <tr key={log.id} className="bg-gray-800">
+                  <td className="border px-2 py-1">{log.bookingId}</td>
+                  <td className="border px-2 py-1">{log.prizeLabel}</td>
+                  <td className="border px-2 py-1">{log.createdAt?.toDate?.()?.toLocaleString() || ''}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-
-          {totalPages > 1 && (
-            <div className="flex justify-between mt-2 text-xs">
-              <button disabled={currentPage===1} onClick={()=>setCurrentPage(currentPage-1)} className="px-2 py-1 bg-gray-700 rounded">
-                {language==='en' ? 'Prev' : 'Sebelum'}
-              </button>
-              <span>{currentPage}/{totalPages}</span>
-              <button disabled={currentPage===totalPages} onClick={()=>setCurrentPage(currentPage+1)} className="px-2 py-1 bg-gray-700 rounded">
-                {language==='en' ? 'Next' : 'Selanjutnya'}
-              </button>
-            </div>
-          )}
         </div>
-      </section>
+        <div className="mt-2 flex justify-between">
+          <button
+            disabled={currentPage <= 1}
+            onClick={() => setCurrentPage(currentPage - 1)}
+            className="px-3 py-1 bg-gray-600 text-white rounded disabled:opacity-50"
+          >
+            {language==='en' ? 'Prev' : 'Sebelumnya'}
+          </button>
+          <span>{currentPage} / {totalPages}</span>
+          <button
+            disabled={currentPage >= totalPages}
+            onClick={() => setCurrentPage(currentPage + 1)}
+            className="px-3 py-1 bg-gray-600 text-white rounded disabled:opacity-50"
+          >
+            {language==='en' ? 'Next' : 'Berikutnya'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
