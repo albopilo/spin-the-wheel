@@ -5,7 +5,7 @@ Patched:
 - After each spin, spin button is locked again until a new booking ID is applied.
 - Booking ID input clears after apply. Applied booking ID disappears after spin.
 - Two-level admin: Logs-only (password 1) and Prize Editor (password 2).
-- Added spin + win sounds.
+- Added spin + win sounds (spin loops until stop).
 - Background image fits both mobile + desktop with center positioning and overlay.
 */
 
@@ -58,7 +58,7 @@ export default function App() {
   const [logs, setLogs] = useState([]);
   const [allowSpin, setAllowSpin] = useState(false);
 
-  // ✅ Audio refs inside the component
+  // ✅ Audio refs
   const spinAudio = useRef(new Audio('/sounds/spin.wav'));
   const winAudio = useRef(new Audio('/sounds/win.wav'));
 
@@ -92,7 +92,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Load logs (spins) for admin view
+  // Load logs
   useEffect(() => {
     const q = query(collection(db, 'spins'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -103,7 +103,7 @@ export default function App() {
   }, []);
 
   // Apply booking ID
-  async function handleApplyBooking() {
+  function handleApplyBooking() {
     const id = bookingIdInput.trim();
     if (!id) {
       alert('Booking ID is required');
@@ -131,7 +131,8 @@ export default function App() {
     setResult(null);
     setResultIndex(index);
 
-    // Play spin sound
+    // 🎵 Start looping spin sound
+    spinAudio.current.loop = true;
     spinAudio.current.currentTime = 0;
     spinAudio.current.play();
 
@@ -142,8 +143,9 @@ export default function App() {
       setAllowSpin(false);
       setBookingId('');
 
-      // Stop spin sound and play win sound
+      // 🎵 Stop spin sound and play win sound
       spinAudio.current.pause();
+      spinAudio.current.loop = false;
       spinAudio.current.currentTime = 0;
       winAudio.current.currentTime = 0;
       winAudio.current.play();
@@ -222,7 +224,7 @@ export default function App() {
 
   return (
     <div
-      className="min-h-screen bg-gray-900 bg-cover relative font-sans"
+      className="min-h-screen flex flex-col justify-center items-center bg-gray-900 bg-cover relative font-sans"
       style={{
         backgroundImage: "url('/bg.jpg')",
         backgroundPosition: "center center",
@@ -230,11 +232,11 @@ export default function App() {
         backgroundSize: "cover",
       }}
     >
-      {/* Overlay to dim the background */}
+      {/* Overlay */}
       <div className="absolute inset-0 bg-black bg-opacity-40"></div>
 
       {/* Foreground content */}
-      <div className="relative z-10 max-w-3xl mx-auto bg-white/80 backdrop-blur-md shadow-md rounded-lg p-6">
+      <div className="relative z-10 w-full max-w-3xl mx-auto bg-white/80 backdrop-blur-md shadow-md rounded-lg p-6">
         <header className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold">Millennium TikTok Spin</h1>
           <div className="text-sm">
