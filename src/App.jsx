@@ -190,7 +190,7 @@ export default function App() {
     <div className="min-h-screen bg-gray-50 p-6 font-sans">
       <div className="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-6">
         <header className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">13e / Millennium TikTok Spin</h1>
+          <h1 className="text-2xl font-bold">Millennium TikTok Spin</h1>
           <div className="text-sm">
             {!adminMode ? (
               <div>
