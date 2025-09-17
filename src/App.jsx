@@ -260,9 +260,9 @@ export default function App() {
         }}
       />
 
-      <div className="relative z-20 w-full max-w-4xl mx-auto px-4 pt-16 pb-0">
+      <div className="relative z-20 w-full max-w-4xl mx-auto px-4 pt-30 pb-0">
         <header className="flex flex-col sm:flex-row items-center justify-between w-full mb-6">
-          <h1 className="text-3xl font-bold mb-3 sm:mb-0" style={textOutlineStyle('#ffffff')}>
+          <h1 className="text-3xl font-bold mb-3 sm:mb-0" style={textOutlineStyle('#ffffff')}> 
             {language==='en' ? 'Millennium TikTok Spin' : 'Putar TikTok Millennium'}
           </h1>
           <div className="flex items-center gap-2">
@@ -319,7 +319,7 @@ export default function App() {
               )}
             </div>
 
-            <div className="w-full max-w-full max-h-[80vw] h-auto relative">
+            <div className="w-full max-w-full max-h-[80vw] min-h-[300px] h-auto relative">
               {prizes.length > 0 ? (
                 <Wheel
                   mustStartSpinning={spinning}
