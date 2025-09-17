@@ -263,8 +263,8 @@ export default function App() {
 
       {/* content wrapper: no mx-auto (you said no auto margin), add top padding so header isn't cut */}
       <div
-        className="relative z-20 w-full max-w-4xl px-4 pt-20 pb-8"
-        style={{ paddingTop: '4rem' }}
+        className="relative z-20 w-full max-w-4xl px-4 pt-16 pb-8"
+        style={{ paddingTop: '1rem' }}
       >
         {/* simplified header per your request (no items-center, no justify-between) */}
         <header className="flex flex-col sm:flex-row w-full mb-6">
