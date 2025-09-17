@@ -1,14 +1,3 @@
-/*
-TikTok Spin-the-Wheel Landing Page (Vite-ready)
-Patched:
-- Any booking ID is accepted.
-- After each spin, spin button is locked again until a new booking ID is applied.
-- Booking ID input clears after apply. Applied booking ID disappears after spin.
-- Two-level admin: Logs-only (password 1) and Prize Editor (password 2).
-- Added spin + win sounds (spin loops until stop).
-- Background image fits both mobile + desktop with center positioning and overlay.
-*/
-
 import React, { useEffect, useState, useRef } from 'react';
 import { initializeApp } from 'firebase/app';
 import {
@@ -224,36 +213,37 @@ export default function App() {
 
   return (
     <div
-      className="min-h-screen flex flex-col justify-center items-center bg-gray-900 bg-cover relative font-sans"
-      style={{
-        backgroundImage: "url('/bg.jpg')",
-        backgroundPosition: "center center",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
-      }}
+      className="relative min-h-screen w-full flex flex-col items-center justify-center font-sans bg-cover bg-center"
+      style={{ backgroundImage: "url('/bg.jpg')" }}
     >
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+      <div className="absolute inset-0 bg-black/60"></div>
 
       {/* Foreground content */}
-      <div className="relative z-10 w-full max-w-3xl mx-auto bg-white/80 backdrop-blur-md shadow-md rounded-lg p-6">
-        <header className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">Millennium TikTok Spin</h1>
+      <div className="relative z-10 flex flex-col items-center justify-center w-full px-4">
+        <header className="flex flex-col sm:flex-row items-center justify-between w-full max-w-4xl mb-6">
+          <h1 className="text-3xl font-bold text-white mb-3 sm:mb-0">Millennium TikTok Spin</h1>
           <div className="text-sm">
             {adminLevel === 0 ? (
-              <div>
+              <div className="flex gap-2">
                 <input
                   placeholder="Admin password"
                   value={adminPasswordInput}
                   onChange={(e) => setAdminPasswordInput(e.target.value)}
-                  className="border px-2 py-1 mr-2 rounded"
+                  className="border px-2 py-1 rounded"
                 />
-                <button onClick={handleAdminLogin} className="px-3 py-1 bg-indigo-600 text-white rounded">
+                <button
+                  onClick={handleAdminLogin}
+                  className="px-3 py-1 bg-indigo-600 text-white rounded"
+                >
                   Admin
                 </button>
               </div>
             ) : (
-              <button onClick={() => setAdminLevel(0)} className="px-3 py-1 bg-red-500 text-white rounded">
+              <button
+                onClick={() => setAdminLevel(0)}
+                className="px-3 py-1 bg-red-500 text-white rounded"
+              >
                 Exit Admin
               </button>
             )}
@@ -261,74 +251,80 @@ export default function App() {
         </header>
 
         {adminLevel === 0 && (
-          <main>
-            {/* User-facing spin page */}
-            <div className="mb-4">
-              <label className="block mb-1 font-medium">Booking ID:</label>
+          <main className="flex flex-col items-center w-full max-w-2xl">
+            {/* Booking ID */}
+            <div className="mb-6 w-full">
+              <label className="block mb-1 text-white font-medium">Booking ID:</label>
               <div className="flex gap-2">
                 <input
                   value={bookingIdInput}
                   onChange={(e) => setBookingIdInput(e.target.value)}
                   placeholder="Enter booking id"
-                  className="flex-1 border p-2 rounded"
+                  className="flex-1 border px-2 py-2 rounded"
                 />
-                <button onClick={handleApplyBooking} className="px-4 py-2 bg-green-600 text-white rounded">
+                <button
+                  onClick={handleApplyBooking}
+                  className="px-4 py-2 bg-green-600 text-white rounded"
+                >
                   Apply
                 </button>
               </div>
               {bookingId && (
-                <div className="mt-2 text-sm text-gray-700">
+                <div className="mt-2 text-sm text-white">
                   Current Booking ID: <strong>{bookingId}</strong>
                 </div>
               )}
             </div>
 
-            <div className="flex flex-col items-center">
-              <div className="w-80 h-80 relative">
-                {prizes.length > 0 ? (
-                  <Wheel
-                    mustStartSpinning={spinning}
-                    prizeNumber={resultIndex >= 0 ? resultIndex : 0}
-                    data={prizes.filter((p) => p.label).map((p) => ({ option: p.label }))}
-                    onStopSpinning={() => setSpinning(false)}
-                    backgroundColors={['#FFDD57', '#FF6B6B', '#6BCB77', '#4D96FF', '#FF8C42']}
-                    textColors={['#000']}
-                    outerBorderColor="#ccc"
-                    outerBorderWidth={5}
-                    radiusLineColor="#fff"
-                    radiusLineWidth={2}
-                    fontSize={14}
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full text-gray-400">
-                    No prizes configured
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-4">
-                <button
-                  onClick={handleSpin}
-                  disabled={spinning || !allowSpin}
-                  className={`px-6 py-3 rounded text-white ${
-                    spinning || !allowSpin ? 'bg-gray-400' : 'bg-yellow-500'
-                  }`}
-                >
-                  {spinning ? 'Spinning...' : 'SPIN'}
-                </button>
-              </div>
-
-              {result && (
-                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded">
-                  <h3 className="font-semibold">You won:</h3>
-                  <div className="text-xl font-bold">{result.label}</div>
-                  <div className="text-sm mt-2">Please screenshot this screen to claim your prize.</div>
+            {/* Wheel */}
+            <div className="w-80 h-80 relative">
+              {prizes.length > 0 ? (
+                <Wheel
+                  mustStartSpinning={spinning}
+                  prizeNumber={resultIndex >= 0 ? resultIndex : 0}
+                  data={prizes.filter((p) => p.label).map((p) => ({ option: p.label }))}
+                  onStopSpinning={() => setSpinning(false)}
+                  backgroundColors={['#FFDD57', '#FF6B6B', '#6BCB77', '#4D96FF', '#FF8C42']}
+                  textColors={['#000']}
+                  outerBorderColor="#ccc"
+                  outerBorderWidth={5}
+                  radiusLineColor="#fff"
+                  radiusLineWidth={2}
+                  fontSize={14}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-400">
+                  No prizes configured
                 </div>
               )}
+            </div>
 
-              <div className="mt-6 text-xs text-gray-500">
-                Each spin requires entering a booking ID. After one spin, you must apply another booking ID to spin again.
+            {/* Spin button */}
+            <div className="mt-6">
+              <button
+                onClick={handleSpin}
+                disabled={spinning || !allowSpin}
+                className={`px-8 py-3 rounded text-white text-lg ${
+                  spinning || !allowSpin ? 'bg-gray-400' : 'bg-yellow-500'
+                }`}
+              >
+                {spinning ? 'Spinning...' : 'SPIN'}
+              </button>
+            </div>
+
+            {/* Result */}
+            {result && (
+              <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded text-center">
+                <h3 className="font-semibold text-green-800">You won:</h3>
+                <div className="text-xl font-bold text-green-900">{result.label}</div>
+                <div className="text-sm mt-2 text-green-700">
+                  Please screenshot this screen to claim your prize.
+                </div>
               </div>
+            )}
+
+            <div className="mt-6 text-xs text-white text-center">
+              Each spin requires entering a booking ID. After one spin, you must apply another booking ID to spin again.
             </div>
           </main>
         )}
@@ -363,16 +359,16 @@ function AdminPanel({
   onDeletePrize
 }) {
   return (
-    <div>
+    <div className="w-full max-w-4xl mt-6 text-white">
       <h2 className="text-lg font-semibold mb-3">Admin Dashboard</h2>
 
       {adminLevel === 1 && (
-        <div className="mb-4">
+        <div className="mb-4 flex gap-2">
           <input
             placeholder="Prize editor password"
             value={prizePasswordInput}
             onChange={(e) => setPrizePasswordInput(e.target.value)}
-            className="border px-2 py-1 mr-2 rounded"
+            className="border px-2 py-1 rounded"
           />
           <button onClick={onPrizeLogin} className="px-3 py-1 bg-indigo-600 text-white rounded">
             Unlock Prize Editor
@@ -381,38 +377,38 @@ function AdminPanel({
       )}
 
       {adminLevel === 2 && (
-        <div className="mb-4">
-          <button onClick={onAddPrize} className="px-3 py-1 bg-green-600 text-white rounded mr-2">
-            Add Prize
-          </button>
-        </div>
-      )}
-
-      {adminLevel === 2 && (
-        <section className="mb-6">
-          <h3 className="font-medium">Prizes</h3>
-          <div className="grid grid-cols-2 gap-3 mt-2">
-            {prizes.map((p) => (
-              <div key={p.id} className="p-3 border rounded bg-gray-50">
-                <div className="font-semibold">{p.label}</div>
-                <div className="text-xs text-gray-600">Probability: {p.probability || 0}</div>
-                <div className="mt-2 flex gap-2">
-                  <button onClick={() => onEditPrize(p)} className="text-sm px-2 py-1 bg-yellow-400 rounded">
-                    Edit
-                  </button>
-                  <button onClick={() => onDeletePrize(p)} className="text-sm px-2 py-1 bg-red-500 text-white rounded">
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
+        <>
+          <div className="mb-4">
+            <button onClick={onAddPrize} className="px-3 py-1 bg-green-600 text-white rounded mr-2">
+              Add Prize
+            </button>
           </div>
-        </section>
+
+          <section className="mb-6">
+            <h3 className="font-medium">Prizes</h3>
+            <div className="grid grid-cols-2 gap-3 mt-2">
+              {prizes.map((p) => (
+                <div key={p.id} className="p-3 border rounded bg-gray-50 text-black">
+                  <div className="font-semibold">{p.label}</div>
+                  <div className="text-xs text-gray-600">Probability: {p.probability || 0}</div>
+                  <div className="mt-2 flex gap-2">
+                    <button onClick={() => onEditPrize(p)} className="text-sm px-2 py-1 bg-yellow-400 rounded">
+                      Edit
+                    </button>
+                    <button onClick={() => onDeletePrize(p)} className="text-sm px-2 py-1 bg-red-500 text-white rounded">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </>
       )}
 
       <section>
         <h3 className="font-medium">Spin Logs (latest)</h3>
-        <div className="mt-2 max-h-64 overflow-auto border rounded p-2 bg-white">
+        <div className="mt-2 max-h-64 overflow-auto border rounded p-2 bg-white text-black">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-gray-600">
