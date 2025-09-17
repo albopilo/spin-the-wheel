@@ -244,6 +244,7 @@ export default function App() {
   const totalPages = Math.ceil(logs.length / pageSize);
   const paginatedLogs = logs.slice((currentPage-1)*pageSize, currentPage*pageSize);
 
+  // Helper for outline style
   const textOutlineStyle = (color) => ({
     color: 'white',
     WebkitTextStroke: `1px ${color}`,
@@ -251,22 +252,26 @@ export default function App() {
   });
 
   return (
-    <div className="static min-h-full w-full font-sans">
-  <div
-    className="absolute inset-0 z-10"
-    style={{
-      backgroundColor: 'rgba(0,0,0,0.65)',
-      backdropFilter: 'blur(3px)'
-    }}
-  />
+    <div className="relative min-h-screen w-full font-sans">
+      <div
+        className="absolute inset-0 z-10"
+        style={{
+          backgroundColor: 'rgba(0,0,0,0.65)',
+          backdropFilter: 'blur(3px)'
+        }}
+      />
 
-  <div className="static z-20 w-full px-4 pt-32 pb-0">
-      <header className="flex flex-col sm:flex-row w-full mb-6">
-
-      <h1 className="text-3xl font-bold mt-6 mb-3 sm:mb-0" style={textOutlineStyle('#ffffff')}>
-        {language==='en' ? 'Millennium TikTok Spin' : 'Putar TikTok Millennium'}
-      </h1>
-      <div className="flex items-center gap-2">
+      {/* content wrapper: no mx-auto (you said no auto margin), add top padding so header isn't cut */}
+      <div
+        className="relative z-20 w-full max-w-4xl px-4 pt-20 pb-8"
+        style={{ paddingTop: '4rem' }}
+      >
+        {/* simplified header per your request (no items-center, no justify-between) */}
+        <header className="flex flex-col sm:flex-row w-full mb-6">
+          <h1 className="text-3xl font-bold mb-3 sm:mb-0 leading-tight" style={textOutlineStyle('#ffffff')}>
+            {language==='en' ? 'Millennium TikTok Spin' : 'Putar TikTok Millennium'}
+          </h1>
+          <div className="flex items-center gap-2">
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
