@@ -270,7 +270,7 @@ bodyEl.style.backgroundAttachment = 'fixed';
   <div
     className="absolute inset-0 z-10"
     style={{
-      backgroundColor: 'rgba(0,0,0,0.65)',
+      backgroundColor: 'rgba(139, 133, 133, 0.65)',
       backdropFilter: 'blur(3px)',
     }}
   />
