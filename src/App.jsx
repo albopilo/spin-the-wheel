@@ -260,7 +260,7 @@ export default function App() {
         }}
       />
 
-      <div className="relative z-20 w-full max-w-4xl mx-auto px-4 pt-30 pb-0">
+      <div className="relative z-20 w-full max-w-4xl mx-auto px-4 pt-100 pb-0">
         <header className="flex flex-col sm:flex-row items-center justify-between w-full mb-6">
           <h1 className="text-3xl font-bold mb-3 sm:mb-0" style={textOutlineStyle('#ffffff')}> 
             {language==='en' ? 'Millennium TikTok Spin' : 'Putar TikTok Millennium'}
