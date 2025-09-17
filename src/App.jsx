@@ -1,7 +1,10 @@
 /*
 TikTok Spin-the-Wheel Landing Page (Vite-ready)
-Patched: Any booking ID is accepted. After each spin, spin button is locked again until a new booking ID is applied.
-Booking ID input clears after apply. Applied booking ID disappears after spin.
+Patched:
+- Any booking ID is accepted.
+- After each spin, spin button is locked again until a new booking ID is applied.
+- Booking ID input clears after apply. Applied booking ID disappears after spin.
+- Two-level admin: Logs-only (password 1) and Prize Editor (password 2).
 */
 
 import React, { useEffect, useState } from 'react';
@@ -19,6 +22,9 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { Wheel } from 'react-custom-roulette';
+import spinSound from './sounds/spin.wav';
+import winSound from './sounds/win.wav';
+
 
 // --------- CONFIG - Vite env (VITE_ prefix)
 const firebaseConfig = {
@@ -30,7 +36,8 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123';
+const ADMIN_LOGS_PASSWORD = import.meta.env.VITE_ADMIN_LOGS_PASSWORD || 'log123';
+const ADMIN_PRIZES_PASSWORD = import.meta.env.VITE_ADMIN_PRIZES_PASSWORD || 'prize123';
 
 // Init Firebase
 const app = initializeApp(firebaseConfig);
@@ -60,10 +67,17 @@ export default function App() {
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState(null);
   const [resultIndex, setResultIndex] = useState(0);
-  const [adminMode, setAdminMode] = useState(false);
+
+  const [adminLevel, setAdminLevel] = useState(0); // 0 = none, 1 = logs, 2 = full
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
+  const [prizePasswordInput, setPrizePasswordInput] = useState('');
+
   const [logs, setLogs] = useState([]);
   const [allowSpin, setAllowSpin] = useState(false);
+
+  const spinAudio = React.useRef(new Audio(spinSound));
+  const winAudio = React.useRef(new Audio(winSound));
+
 
   // Load prizes from Firestore
   useEffect(() => {
@@ -89,7 +103,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Apply booking ID (no validation, always allow spin once)
+  // Apply booking ID
   async function handleApplyBooking() {
     const id = bookingIdInput.trim();
     if (!id) {
@@ -97,35 +111,47 @@ export default function App() {
       return;
     }
     setBookingId(id);
-    setBookingIdInput(''); // auto clear input
+    setBookingIdInput('');
     setAllowSpin(true);
     setResult(null);
   }
 
   async function handleSpin() {
-    if (!bookingId) {
-      alert('Please enter a Booking ID first');
-      return;
-    }
-    if (prizes.length === 0) {
-      alert('No prizes configured');
-      return;
-    }
-
-    const { prize: selected, index } = pickPrizeByProbability(prizes);
-    setSpinning(true);
-    setResult(null);
-    setResultIndex(index);
-
-    setTimeout(async () => {
-      await recordSpin(selected);
-      setResult(selected);
-      setSpinning(false);
-      setAllowSpin(false); // lock spin until new booking ID is applied
-      setBookingId(''); // clear applied booking ID
-      alert(`🎉 YOU WON: ${selected.label}\nPlease take a screenshot to claim your prize.`);
-    }, 4200);
+  if (!bookingId) {
+    alert('Please enter a Booking ID first');
+    return;
   }
+  if (prizes.length === 0) {
+    alert('No prizes configured');
+    return;
+  }
+
+  const { prize: selected, index } = pickPrizeByProbability(prizes);
+  setSpinning(true);
+  setResult(null);
+  setResultIndex(index);
+
+  // Play spin sound
+  spinAudio.current.currentTime = 0;
+  spinAudio.current.play();
+
+  setTimeout(async () => {
+    await recordSpin(selected);
+    setResult(selected);
+    setSpinning(false);
+    setAllowSpin(false);
+    setBookingId('');
+
+    // Stop spin sound and play win sound
+    spinAudio.current.pause();
+    spinAudio.current.currentTime = 0;
+    winAudio.current.currentTime = 0;
+    winAudio.current.play();
+
+    alert(`🎉 YOU WON: ${selected.label}\nPlease take a screenshot to claim your prize.`);
+  }, 4200);
+}
+
 
   async function recordSpin(selectedPrize) {
     try {
@@ -140,20 +166,29 @@ export default function App() {
     }
   }
 
-  // Admin login
+  // Admin log in (level 1)
   function handleAdminLogin() {
-    if (adminPasswordInput === ADMIN_PASSWORD) {
-      setAdminMode(true);
+    if (adminPasswordInput === ADMIN_LOGS_PASSWORD) {
+      setAdminLevel(1);
     } else {
       alert('Wrong admin password');
     }
   }
 
+  // Admin prize unlock (level 2)
+  function handlePrizeLogin() {
+    if (prizePasswordInput === ADMIN_PRIZES_PASSWORD) {
+      setAdminLevel(2);
+    } else {
+      alert('Wrong prize password');
+    }
+  }
+
   // Admin actions
   async function adminAddPrize() {
-    const label = prompt('Prize label? (eg: Free Coffee)');
+    const label = prompt('Prize label?');
     if (!label) return;
-    const probStr = prompt('Probability percent? (eg: 10)');
+    const probStr = prompt('Probability percent?');
     const prob = parseFloat(probStr);
     if (isNaN(prob) || prob <= 0) return alert('invalid probability');
     try {
@@ -190,9 +225,9 @@ export default function App() {
     <div className="min-h-screen bg-gray-50 p-6 font-sans">
       <div className="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-6">
         <header className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">13e / Millennium TikTok Spin</h1>
+          <h1 className="text-2xl font-bold">Millennium TikTok Spin</h1>
           <div className="text-sm">
-            {!adminMode ? (
+            {adminLevel === 0 ? (
               <div>
                 <input
                   placeholder="Admin password"
@@ -205,15 +240,16 @@ export default function App() {
                 </button>
               </div>
             ) : (
-              <button onClick={() => setAdminMode(false)} className="px-3 py-1 bg-red-500 text-white rounded">
+              <button onClick={() => setAdminLevel(0)} className="px-3 py-1 bg-red-500 text-white rounded">
                 Exit Admin
               </button>
             )}
           </div>
         </header>
 
-        {!adminMode ? (
+        {adminLevel === 0 && (
           <main>
+            {/* User-facing spin page */}
             <div className="mb-4">
               <label className="block mb-1 font-medium">Booking ID:</label>
               <div className="flex gap-2">
@@ -280,64 +316,84 @@ export default function App() {
               </div>
             </div>
           </main>
-        ) : (
-          <AdminPanel prizes={prizes} logs={logs} onAddPrize={adminAddPrize} onEditPrize={adminEditPrize} onDeletePrize={adminDeletePrize} />
+        )}
+
+        {adminLevel >= 1 && (
+          <AdminPanel
+            prizes={prizes}
+            logs={logs}
+            adminLevel={adminLevel}
+            prizePasswordInput={prizePasswordInput}
+            setPrizePasswordInput={setPrizePasswordInput}
+            onPrizeLogin={handlePrizeLogin}
+            onAddPrize={adminAddPrize}
+            onEditPrize={adminEditPrize}
+            onDeletePrize={adminDeletePrize}
+          />
         )}
       </div>
     </div>
   );
 }
 
-function AdminPanel({ prizes, logs, onAddPrize, onEditPrize, onDeletePrize }) {
+function AdminPanel({
+  prizes,
+  logs,
+  adminLevel,
+  prizePasswordInput,
+  setPrizePasswordInput,
+  onPrizeLogin,
+  onAddPrize,
+  onEditPrize,
+  onDeletePrize
+}) {
   return (
     <div>
       <h2 className="text-lg font-semibold mb-3">Admin Dashboard</h2>
-      <div className="mb-4">
-        <button onClick={onAddPrize} className="px-3 py-1 bg-green-600 text-white rounded mr-2">
-          Add Prize
-        </button>
-        <button
-          onClick={async () => {
-            const total = prizes.reduce((s, p) => s + (p.probability || 0), 0);
-            if (total === 0) return alert('Total probability is zero');
-            const promises = prizes.map(async (p) => {
-              const ref = doc(db, 'prizes', p.id);
-              const scaled = ((p.probability || 0) / total) * 100;
-              await updateDoc(ref, { probability: scaled });
-            });
-            try {
-              await Promise.all(promises);
-              alert('Normalized probabilities to percentages.');
-            } catch (err) {
-              console.error(err);
-              alert('Failed to normalize');
-            }
-          }}
-          className="px-3 py-1 bg-blue-600 text-white rounded"
-        >
-          Normalize Probabilities
-        </button>
-      </div>
 
-      <section className="mb-6">
-        <h3 className="font-medium">Prizes</h3>
-        <div className="grid grid-cols-2 gap-3 mt-2">
-          {prizes.map((p) => (
-            <div key={p.id} className="p-3 border rounded bg-gray-50">
-              <div className="font-semibold">{p.label}</div>
-              <div className="text-xs text-gray-600">Probability: {p.probability || 0}</div>
-              <div className="mt-2 flex gap-2">
-                <button onClick={() => onEditPrize(p)} className="text-sm px-2 py-1 bg-yellow-400 rounded">
-                  Edit
-                </button>
-                <button onClick={() => onDeletePrize(p)} className="text-sm px-2 py-1 bg-red-500 text-white rounded">
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+      {adminLevel === 1 && (
+        <div className="mb-4">
+          <input
+            placeholder="Prize editor password"
+            value={prizePasswordInput}
+            onChange={(e) => setPrizePasswordInput(e.target.value)}
+            className="border px-2 py-1 mr-2 rounded"
+          />
+          <button onClick={onPrizeLogin} className="px-3 py-1 bg-indigo-600 text-white rounded">
+            Unlock Prize Editor
+          </button>
         </div>
-      </section>
+      )}
+
+      {adminLevel === 2 && (
+        <div className="mb-4">
+          <button onClick={onAddPrize} className="px-3 py-1 bg-green-600 text-white rounded mr-2">
+            Add Prize
+          </button>
+        </div>
+      )}
+
+      {adminLevel === 2 && (
+        <section className="mb-6">
+          <h3 className="font-medium">Prizes</h3>
+          <div className="grid grid-cols-2 gap-3 mt-2">
+            {prizes.map((p) => (
+              <div key={p.id} className="p-3 border rounded bg-gray-50">
+                <div className="font-semibold">{p.label}</div>
+                <div className="text-xs text-gray-600">Probability: {p.probability || 0}</div>
+                <div className="mt-2 flex gap-2">
+                  <button onClick={() => onEditPrize(p)} className="text-sm px-2 py-1 bg-yellow-400 rounded">
+                    Edit
+                  </button>
+                  <button onClick={() => onDeletePrize(p)} className="text-sm px-2 py-1 bg-red-500 text-white rounded">
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section>
         <h3 className="font-medium">Spin Logs (latest)</h3>
