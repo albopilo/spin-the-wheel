@@ -74,15 +74,14 @@ export default function App() {
     };
 
     htmlEl.style.height = '';
-bodyEl.style.height = '';
-bodyEl.style.minHeight = '100vh';
-bodyEl.style.margin = '0';
-bodyEl.style.backgroundImage = `url('${bgPath}')`;
-bodyEl.style.backgroundSize = 'cover';
-bodyEl.style.backgroundPosition = 'center center';
-bodyEl.style.backgroundRepeat = 'no-repeat';
-bodyEl.style.backgroundAttachment = 'fixed';
-
+    bodyEl.style.height = '';
+    bodyEl.style.minHeight = '100vh';
+    bodyEl.style.margin = '0';
+    bodyEl.style.backgroundImage = `url('${bgPath}')`;
+    bodyEl.style.backgroundSize = 'cover';
+    bodyEl.style.backgroundPosition = 'center center';
+    bodyEl.style.backgroundRepeat = 'no-repeat';
+    bodyEl.style.backgroundAttachment = 'fixed';
 
     return () => {
       htmlEl.style.height = previous.htmlHeight;
@@ -176,7 +175,7 @@ bodyEl.style.backgroundAttachment = 'fixed';
       winAudio.current.currentTime = 0;
       winAudio.current.play();
 
-      alert(language==='en' 
+      alert(language==='en'
         ? `🎉 YOU WON: ${selected.label}\nPlease take a screenshot to claim your prize.`
         : `🎉 ANDA MENANG: ${selected.label}\nSilakan screenshot untuk klaim hadiah.`);
     }, spinDuration);
@@ -246,160 +245,193 @@ bodyEl.style.backgroundAttachment = 'fixed';
   const totalPages = Math.ceil(logs.length / pageSize);
   const paginatedLogs = logs.slice((currentPage-1)*pageSize, currentPage*pageSize);
 
-  // Helper for outline style
-  const textOutlineStyle = (color) => ({
+  // Helper for outline style — white text with optional dark stroke for readability
+  const textOutlineStyle = (strokeColor = '#000000') => ({
     color: 'white',
-    WebkitTextStroke: `1px ${color}`,
-    textStroke: `1px ${color}`
+    WebkitTextStroke: `1px ${strokeColor}`,
+    textStroke: `1px ${strokeColor}`
   });
 
-    return (
-  <div className="relative min-h-screen w-full font-sans">
+  return (
+    <div className="relative min-h-screen w-full font-sans">
 
-    {/* Background div */}
-    <div
-      className="absolute inset-0 z-0"
-      style={{
-        backgroundImage: "url('/bg.jpg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center center",
-        backgroundAttachment: "fixed",
-      }}
-    />
+      {/* Background div (covers viewport) */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: "url('/bg.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center center',
+          backgroundAttachment: 'fixed',
+        }}
+      />
 
-    {/* Overlay */}
-    <div
-      className="absolute inset-0 z-10"
-      style={{
-        backgroundColor: 'rgba(0,0,0,0.65)',
-        backdropFilter: 'blur(3px)',
-      }}
-    />
+      {/* Overlay sits above background (z-10) and below content (z-20) */}
+      <div
+        className="absolute inset-0 z-10"
+        style={{
+          backgroundColor: 'rgba(0,0,0,0.65)',
+          backdropFilter: 'blur(3px)',
+        }}
+      />
 
-    {/* Content wrapper */}
-    <div className="relative z-20 w-full max-w-4xl px-4 pt-16 pb-8 text-white">
 
-      {/* Header */}
-      <header className="flex flex-col sm:flex-row w-full mb-6">
-        <h1 className="text-3xl font-bold mb-3 sm:mb-0 leading-tight">
-          {language==='en' ? 'Millennium TikTok Spin' : 'Putar TikTok Millennium'}
-        </h1>
-        <div className="flex items-center gap-2">
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className="px-2 py-1 rounded border bg-gray-700 text-white"
-          >
-            <option value="en">English</option>
-            <option value="id">Bahasa Indonesia</option>
-          </select>
-
-          {adminLevel === 0 ? (
-            <div className="flex gap-2">
-              <input
-                placeholder={language==='en' ? "Admin password" : "Password admin"}
-                value={adminPasswordInput}
-                onChange={(e) => setAdminPasswordInput(e.target.value)}
-                className="border px-2 py-1 rounded text-white bg-gray-800 placeholder-white"
-              />
-              <button onClick={handleAdminLogin} className="px-3 py-1 bg-indigo-600 text-white rounded">
-                {language==='en' ? 'Admin' : 'Admin'}
-              </button>
-            </div>
-          ) : (
-            <button onClick={() => setAdminLevel(0)} className="px-3 py-1 bg-red-500 text-white rounded">
-              {language==='en' ? 'Exit Admin' : 'Keluar Admin'}
-            </button>
-          )}
-        </div>
-      </header>
-
-      {adminLevel === 0 && (
-        <main className="flex flex-col items-center w-full max-w-2xl">
-          {/* Booking input */}
-          <div className="mb-6 w-full">
-            <label className="block mb-1 font-medium">
-              {language==='en' ? 'Booking ID:' : 'ID Pemesanan:'}
-            </label>
-            <div className="flex gap-2">
-              <input
-                value={bookingIdInput}
-                onChange={(e) => setBookingIdInput(e.target.value)}
-                placeholder={language==='en' ? "Enter booking id" : "Masukkan ID pemesanan"}
-                className="flex-1 border px-2 py-2 rounded text-white bg-gray-800 placeholder-white"
-              />
-              <button onClick={handleApplyBooking} className="px-4 py-2 bg-green-600 text-white rounded">
-                {language==='en' ? 'Apply' : 'Terapkan'}
-              </button>
-            </div>
-            {bookingId && (
-              <div className="mt-2 text-sm font-medium">
-                {language==='en' ? 'Current Booking ID:' : 'ID Pemesanan Saat Ini:'} <strong>{bookingId}</strong>
-              </div>
-            )}
-          </div>
-
-          {/* Wheel container */}
-          <div className="w-full max-w-full max-h-[80vw] min-h-[300px] h-auto relative">
-            {prizes.length > 0 ? (
-              <Wheel
-                mustStartSpinning={spinning}
-                prizeNumber={resultIndex >= 0 ? resultIndex : 0}
-                data={prizes.filter((p) => p.label).map((p) => ({ option: p.label }))}
-                onStopSpinning={() => setSpinning(false)}
-                backgroundColors={['#FFDD57', '#FF6B6B', '#6BCB77', '#4D96FF', '#FF8C42']}
-                textColors={['#000']}
-                outerBorderColor="#ccc"
-                outerBorderWidth={5}
-                radiusLineColor="#fff"
-                radiusLineWidth={2}
-                fontSize={14}
-              />
-            ) : (
-              <div className="flex items-center justify-center h-80">
-                {language==='en' ? 'No prizes configured' : 'Belum ada hadiah'}
-              </div>
-            )}
-          </div>
-
-          {/* Spin button */}
-          <div className="mt-6">
-            <button
-              onClick={handleSpin}
-              disabled={spinning || !allowSpin}
-              className={`px-8 py-3 rounded text-white text-lg ${
-                spinning || !allowSpin ? 'bg-gray-400' : 'bg-yellow-500'
-              }`}
+      {/* content wrapper: all text forced white */}
+      <div
+        className="relative z-20 w-full max-w-4xl px-4 pt-16 pb-8 text-white"
+        style={{ paddingTop: '1rem' }}
+      >
+        {/* simplified header per your request (no items-center, no justify-between) */}
+        <header className="flex flex-col sm:flex-row w-full mb-6">
+          <h1 className="text-3xl font-bold mb-3 sm:mb-0 leading-tight" style={textOutlineStyle('#000000')}>
+            {language==='en' ? 'Millennium TikTok Spin' : 'Putar TikTok Millennium'}
+          </h1>
+          <div className="flex items-center gap-2">
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="px-2 py-1 rounded border bg-gray-700 text-white"
             >
-              {spinning ? (language==='en' ? 'Spinning...' : 'Sedang berputar...') : (language==='en' ? 'SPIN' : 'PUTAR')}
-            </button>
+              <option value="en">English</option>
+              <option value="id">Bahasa Indonesia</option>
+            </select>
+
+            {adminLevel === 0 ? (
+              <div className="flex gap-2">
+                <input
+                  placeholder={language==='en' ? "Admin password" : "Password admin"}
+                  value={adminPasswordInput}
+                  onChange={(e) => setAdminPasswordInput(e.target.value)}
+                  className="border px-2 py-1 rounded text-white bg-gray-800 placeholder-white"
+                />
+                <button onClick={handleAdminLogin} className="px-3 py-1 bg-indigo-600 text-white rounded">
+                  {language==='en' ? 'Admin' : 'Admin'}
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => setAdminLevel(0)} className="px-3 py-1 bg-red-500 text-white rounded">
+                {language==='en' ? 'Exit Admin' : 'Keluar Admin'}
+              </button>
+            )}
           </div>
-        </main>
-      )}
+        </header>
 
-      {/* Admin Panel */}
-      {adminLevel >= 1 && (
-        <AdminPanel
-          prizes={prizes}
-          logs={paginatedLogs}
-          totalPages={totalPages}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-          adminLevel={adminLevel}
-          prizePasswordInput={prizePasswordInput}
-          setPrizePasswordInput={setPrizePasswordInput}
-          onPrizeLogin={handlePrizeLogin}
-          onAddPrize={adminAddPrize}
-          onEditPrize={adminEditPrize}
-          onDeletePrize={adminDeletePrize}
-          language={language}
-        />
-      )}
+        {adminLevel === 0 && (
+          <main className="flex flex-col items-center w-full max-w-2xl">
+            <div className="mb-6 w-full">
+              <label className="block mb-1 font-medium" style={textOutlineStyle('#000000')}>
+                {language==='en' ? 'Booking ID:' : 'ID Pemesanan:'}
+              </label>
+              <div className="flex gap-2">
+                <input
+                  value={bookingIdInput}
+                  onChange={(e) => setBookingIdInput(e.target.value)}
+                  placeholder={language==='en' ? "Enter booking id" : "Masukkan ID pemesanan"}
+                  className="flex-1 border px-2 py-2 rounded text-white bg-gray-800 placeholder-white"
+                />
+                <button onClick={handleApplyBooking} className="px-4 py-2 bg-green-600 text-white rounded">
+                  {language==='en' ? 'Apply' : 'Terapkan'}
+                </button>
+              </div>
+              {bookingId && (
+                <div className="mt-2 text-sm font-medium" style={textOutlineStyle('#000000')}>
+                  {language==='en' ? 'Current Booking ID:' : 'ID Pemesanan Saat Ini:'} <strong>{bookingId}</strong>
+                </div>
+              )}
+            </div>
 
+            <div className="w-full max-w-full max-h-[80vw] min-h-[300px] h-auto relative">
+              {prizes.length > 0 ? (
+                <Wheel
+                  mustStartSpinning={spinning}
+                  prizeNumber={resultIndex >= 0 ? resultIndex : 0}
+                  data={prizes.filter((p) => p.label).map((p) => ({ option: p.label }))}
+                  onStopSpinning={() => setSpinning(false)}
+                  backgroundColors={['#FFDD57', '#FF6B6B', '#6BCB77', '#4D96FF', '#FF8C42']}
+                  textColors={['#ffffff']}
+                  outerBorderColor="#ccc"
+                  outerBorderWidth={5}
+                  radiusLineColor="#fff"
+                  radiusLineWidth={2}
+                  fontSize={14}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-80">
+                  {language==='en' ? 'No prizes configured' : 'Belum ada hadiah'}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6">
+              <button
+                onClick={handleSpin}
+                disabled={spinning || !allowSpin}
+                className={`px-8 py-3 rounded text-white text-lg ${
+                  spinning || !allowSpin ? 'bg-gray-400' : 'bg-yellow-500'
+                }`}
+              >
+                {spinning ? (language==='en' ? 'Spinning...' : 'Sedang berputar...') : (language==='en' ? 'SPIN' : 'PUTAR')}
+              </button>
+            </div>
+
+            {result && (
+              <div className="mt-6 p-4 bg-green-800 bg-opacity-80 border border-green-700 rounded text-center text-white">
+                <h3 className="font-semibold">
+                  {language==='en' ? 'You won:' : 'Anda menang:'}
+                </h3>
+                <div className="text-xl font-bold">{result.label}</div>
+                <div className="text-sm mt-2">
+                  {language==='en' ? 'Please screenshot this screen to claim your prize.' : 'Silakan screenshot layar ini untuk klaim hadiah.'}
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6 text-xs text-white text-center">
+              {language==='en'
+                ? 'Each spin requires entering a booking ID. After one spin, you must apply another booking ID to spin again.'
+                : 'Setiap putaran membutuhkan ID pemesanan. Setelah satu putaran, masukkan ID baru untuk berputar lagi.'}
+            </div>
+          </main>
+        )}
+
+        {adminLevel >= 1 && (
+          <AdminPanel
+            prizes={prizes}
+            logs={paginatedLogs}
+            totalPages={totalPages}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            adminLevel={adminLevel}
+            prizePasswordInput={prizePasswordInput}
+            setPrizePasswordInput={setPrizePasswordInput}
+            onPrizeLogin={handlePrizeLogin}
+            onAddPrize={adminAddPrize}
+            onEditPrize={adminEditPrize}
+            onDeletePrize={adminDeletePrize}
+            language={language}
+          />
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+}
 
+// AdminPanel component remains unchanged but inputs/buttons forced white where needed
+function AdminPanel({
+  prizes,
+  logs,
+  totalPages,
+  currentPage,
+  setCurrentPage,
+  adminLevel,
+  prizePasswordInput,
+  setPrizePasswordInput,
+  onPrizeLogin,
+  onAddPrize,
+  onEditPrize,
+  onDeletePrize,
+  language
+}) {
   return (
     <div className="w-full max-w-4xl mt-6 text-white">
       {/* All text inside now inherits white color */}
@@ -499,4 +531,3 @@ bodyEl.style.backgroundAttachment = 'fixed';
     </div>
   );
 }
-
