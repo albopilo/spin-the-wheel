@@ -77,6 +77,7 @@ export default function App() {
     bodyEl.style.height = '';
     bodyEl.style.minHeight = '100vh';
     bodyEl.style.margin = '0';
+    // keep the body background as a fallback but we'll also render a background div
     bodyEl.style.backgroundImage = `url('${bgPath}')`;
     bodyEl.style.backgroundSize = 'cover';
     bodyEl.style.backgroundPosition = 'center center';
@@ -176,8 +177,10 @@ export default function App() {
       winAudio.current.play();
 
       alert(language==='en'
-        ? `🎉 YOU WON: ${selected.label}\nPlease take a screenshot to claim your prize.`
-        : `🎉 ANDA MENANG: ${selected.label}\nSilakan screenshot untuk klaim hadiah.`);
+        ? `🎉 YOU WON: ${selected.label}
+Please take a screenshot to claim your prize.`
+        : `🎉 ANDA MENANG: ${selected.label}
+Silakan screenshot untuk klaim hadiah.`);
     }, spinDuration);
   }
 
@@ -263,6 +266,8 @@ export default function App() {
           backgroundSize: 'cover',
           backgroundPosition: 'center center',
           backgroundAttachment: 'fixed',
+          // dim the background image so overlay + white text are clearly visible
+          filter: 'brightness(0.55) saturate(0.95)'
         }}
       />
 
@@ -270,8 +275,8 @@ export default function App() {
       <div
         className="absolute inset-0 z-10"
         style={{
-          backgroundColor: 'rgba(0,0,0,0.65)',
-          backdropFilter: 'blur(3px)',
+          backgroundColor: 'rgba(0,0,0,0.72)', // slightly less transparent -> darker overlay
+          backdropFilter: 'blur(4px)'
         }}
       />
 
@@ -279,7 +284,7 @@ export default function App() {
       {/* content wrapper: all text forced white */}
       <div
         className="relative z-20 w-full max-w-4xl px-4 pt-16 pb-8 text-white"
-        style={{ paddingTop: '1rem' }}
+        style={{ paddingTop: '1rem', color: '#ffffff' }}
       >
         {/* simplified header per your request (no items-center, no justify-between) */}
         <header className="flex flex-col sm:flex-row w-full mb-6">
@@ -291,6 +296,7 @@ export default function App() {
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
               className="px-2 py-1 rounded border bg-gray-700 text-white"
+              style={{ color: '#ffffff' }}
             >
               <option value="en">English</option>
               <option value="id">Bahasa Indonesia</option>
@@ -357,7 +363,7 @@ export default function App() {
                 />
               ) : (
                 <div className="flex items-center justify-center h-80">
-                  {language==='en' ? 'No prizes configured' : 'Belum ada hadiah'}
+                  <span style={{ color: '#ffffff' }}>{language==='en' ? 'No prizes configured' : 'Belum ada hadiah'}</span>
                 </div>
               )}
             </div>
@@ -435,7 +441,7 @@ function AdminPanel({
   return (
     <div className="w-full max-w-4xl mt-6 text-white">
       {/* All text inside now inherits white color */}
-      <h2 className="text-lg font-semibold mb-3">{language==='en' ? 'Admin Dashboard' : 'Dashboard Admin'}</h2>
+      <h2 className="text-lg font-semibold mb-3" style={{ color: '#ffffff' }}>{language==='en' ? 'Admin Dashboard' : 'Dashboard Admin'}</h2>
 
       {adminLevel === 1 && (
         <div className="mb-4 flex gap-2">
@@ -459,9 +465,9 @@ function AdminPanel({
             </button>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left border-collapse border border-gray-400 text-white">
+            <table className="w-full text-sm text-left border-collapse border border-gray-400" style={{ color: '#ffffff' }}>
               <thead>
-                <tr className="bg-gray-700 text-white">
+                <tr className="bg-gray-700">
                   <th className="border px-2 py-1">{language==='en' ? 'Label' : 'Label'}</th>
                   <th className="border px-2 py-1">{language==='en' ? 'Probability' : 'Probabilitas'}</th>
                   <th className="border px-2 py-1">{language==='en' ? 'Actions' : 'Aksi'}</th>
@@ -470,8 +476,8 @@ function AdminPanel({
               <tbody>
                 {prizes.map((p) => (
                   <tr key={p.id} className="bg-gray-800">
-                    <td className="border px-2 py-1">{p.label}</td>
-                    <td className="border px-2 py-1">{p.probability}</td>
+                    <td className="border px-2 py-1" style={{ color: '#ffffff' }}>{p.label}</td>
+                    <td className="border px-2 py-1" style={{ color: '#ffffff' }}>{p.probability}</td>
                     <td className="border px-2 py-1 flex gap-2">
                       <button onClick={() => onEditPrize(p)} className="px-2 py-1 bg-yellow-500 rounded text-white">
                         {language==='en' ? 'Edit' : 'Edit'}
@@ -489,11 +495,11 @@ function AdminPanel({
       )}
 
       <div className="mt-6">
-        <h3 className="text-md font-semibold mb-2">{language==='en' ? 'Recent Spins' : 'Putaran Terbaru'}</h3>
+        <h3 className="text-md font-semibold mb-2" style={{ color: '#ffffff' }}>{language==='en' ? 'Recent Spins' : 'Putaran Terbaru'}</h3>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left border-collapse border border-gray-400 text-white">
+          <table className="w-full text-sm text-left border-collapse border border-gray-400" style={{ color: '#ffffff' }}>
             <thead>
-              <tr className="bg-gray-700 text-white">
+              <tr className="bg-gray-700">
                 <th className="border px-2 py-1">Booking ID</th>
                 <th className="border px-2 py-1">{language==='en' ? 'Prize' : 'Hadiah'}</th>
                 <th className="border px-2 py-1">{language==='en' ? 'Date' : 'Tanggal'}</th>
@@ -502,15 +508,15 @@ function AdminPanel({
             <tbody>
               {logs.map((log) => (
                 <tr key={log.id} className="bg-gray-800">
-                  <td className="border px-2 py-1">{log.bookingId}</td>
-                  <td className="border px-2 py-1">{log.prizeLabel}</td>
-                  <td className="border px-2 py-1">{log.createdAt?.toDate?.()?.toLocaleString() || ''}</td>
+                  <td className="border px-2 py-1" style={{ color: '#ffffff' }}>{log.bookingId}</td>
+                  <td className="border px-2 py-1" style={{ color: '#ffffff' }}>{log.prizeLabel}</td>
+                  <td className="border px-2 py-1" style={{ color: '#ffffff' }}>{log.createdAt?.toDate?.()?.toLocaleString() || ''}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <div className="mt-2 flex justify-between">
+        <div className="mt-2 flex justify-between items-center">
           <button
             disabled={currentPage <= 1}
             onClick={() => setCurrentPage(currentPage - 1)}
@@ -518,7 +524,7 @@ function AdminPanel({
           >
             {language==='en' ? 'Prev' : 'Sebelumnya'}
           </button>
-          <span>{currentPage} / {totalPages}</span>
+          <span style={{ color: '#ffffff' }}>{currentPage} / {totalPages}</span>
           <button
             disabled={currentPage >= totalPages}
             onClick={() => setCurrentPage(currentPage + 1)}
