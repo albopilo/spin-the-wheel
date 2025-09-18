@@ -325,7 +325,7 @@ Silakan screenshot untuk klaim hadiah.`);
         {adminLevel === 0 && (
           <main className="flex flex-col items-center w-full max-w-2xl">
             <div className="mb-6 w-full">
-              <label className="block mb-1 font-medium" style={{ ...textOutlineStyle('#000000'), color: '#ffffffff' }}>
+              <label className="block mb-1 font-medium" style={{ ...textOutlineStyle('#ffffffff'), color: '#ffffffff' }}>
                 {language==='en' ? 'Booking ID:' : 'ID Pemesanan:'}
               </label>
               <div className="flex gap-2">
