@@ -296,7 +296,7 @@ Silakan screenshot untuk klaim hadiah.`);
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
               className="px-2 py-1 rounded border bg-gray-700 text-white"
-              style={{ color: '#ffffff' }}
+              style={{ color: '#000000ff' }}
             >
               <option value="en">English</option>
               <option value="id">Bahasa Indonesia</option>
@@ -325,7 +325,7 @@ Silakan screenshot untuk klaim hadiah.`);
         {adminLevel === 0 && (
           <main className="flex flex-col items-center w-full max-w-2xl">
             <div className="mb-6 w-full">
-              <label className="block mb-1 font-medium" style={textOutlineStyle('#000000')}>
+              <label className="block mb-1 font-medium" style={{ ...textOutlineStyle('#000000'), color: '#ffffffff' }}>
                 {language==='en' ? 'Booking ID:' : 'ID Pemesanan:'}
               </label>
               <div className="flex gap-2">
